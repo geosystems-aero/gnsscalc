@@ -1,3 +1,6 @@
+package gnss.calc
+
+import aero.geosystems.gnss.GnssUtils
 import javafx.geometry.Point3D
 import java.io.BufferedReader
 import java.io.File
@@ -65,7 +68,7 @@ fun main(args: Array<String>) {
     println("$satID:${sat.toc}:$time: ${pos.point3D.x}, ${pos.point3D.y}, ${pos.point3D.z}")
 }
 
-fun select_sat(sat:Int, time: Date):eph_t {
+fun select_sat(sat:Int, time: Date): eph_t {
     val list = nav.eph.filter { it.sat == sat }
     if(list.isEmpty()){
         throw Throwable("Satellite $sat not found.")

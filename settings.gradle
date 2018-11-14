@@ -1,3 +1,4 @@
-include ":gnssformats"
+include ":gnssformats",":GNSS"
 // Ideally, I'd like to refer the project in a versioned way, but keep the path non-versioned
 project(":gnssformats").projectDir = file("../gnssformats")
+project(":GNSS").projectDir = file("../gnssformats/GNSS")

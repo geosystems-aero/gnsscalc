@@ -1,3 +1,5 @@
+package gnss.calc;
+
 import java.util.Date;
 
 public class geph_t {

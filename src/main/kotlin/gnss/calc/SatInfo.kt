@@ -1,3 +1,5 @@
+package gnss.calc
+
 const val MINPRNGPS = 1                   /* min satellite PRN number of GPS */
 const val MAXPRNGPS = 32                  /* max satellite PRN number of GPS */
 const val NSATGPS = (MAXPRNGPS - MINPRNGPS + 1) /* number of GPS satellites */
