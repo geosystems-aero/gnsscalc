@@ -1,7 +1,6 @@
 package gnss.calc
 
 import javafx.geometry.Point3D
-import java.util.*
 
 /*
  * Created by aimozg on 14.11.2018.
@@ -19,7 +18,7 @@ private fun var_uraeph(ura: Int): Double {
 	return ura_value[ura]
 }
 
-fun eph_t.positionAt(time: Date): Pos {
+fun eph_t.positionAt(time: GnssTime): Pos {
     if (A <= 0.0) {
         return Pos(Point3D.ZERO, 0.0, 0.0)
     }

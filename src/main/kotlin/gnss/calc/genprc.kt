@@ -20,7 +20,7 @@ import kotlin.math.pow
 fun genprc(time: GnssTime, range: Double, base: DoubleArray, eph: eph_t): Double {
 	val dt = -range / CLIGHT
 	val time1 = GnssTime(time.time, time.sec + dt)
-	val pos = eph.positionAt(time1.toDate())
+	val pos = eph.positionAt(time1)
 	val x = pos.point3D.x
 	val y = pos.point3D.y
 	val z = pos.point3D.z

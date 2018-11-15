@@ -1,6 +1,5 @@
 package gnss.calc
 
-import aero.geosystems.gnss.GnssUtils
 import javafx.geometry.Point3D
 import java.io.BufferedReader
 import java.io.File
@@ -65,25 +64,15 @@ fun main(args: Array<String>) {
     val time = gps2time(1922, 292229.000)
     val sat = select_sat(satID, time)
     val pos = sat.positionAt(time)
-    println("$satID:${sat.toc}:$time: ${pos.point3D.x}, ${pos.point3D.y}, ${pos.point3D.z}")
+    println("$satID:${sat.toc.toDate().toGMTString()}:${time.toDate().toGMTString()}: ${pos.point3D.x}, ${pos.point3D.y}, ${pos.point3D.z}")
 }
 
-fun select_sat(sat:Int, time: Date): eph_t {
+fun select_sat(sat:Int, time: GnssTime): eph_t {
     val list = nav.eph.filter { it.sat == sat }
     if(list.isEmpty()){
         throw Throwable("Satellite $sat not found.")
     }
-    val sorted = list.sortedWith(comparator = object : Comparator<eph_t> {
-        override fun compare(o1: eph_t, o2: eph_t): Int {
-            val d1 = Math.abs(o1.toc.time - time.time)
-            val d2 = Math.abs(o2.toc.time - time.time)
-            return when {
-                d1 < d2 -> -1
-                o1.toc.time == o2.toc.time -> 0
-                else -> 1
-            }
-        }
-    })
+    val sorted = list.sortedBy { Math.abs(it.toc - time) }
     return sorted[0]
 }
 
@@ -225,7 +214,7 @@ fun readrnxnavb(lines: Array<String>, spacing: Int) {
     }
     val df = SimpleDateFormat("yy MM dd HH mm ssss")
     df.timeZone = TimeZone.getTimeZone("GMT")
-    val toc = df.parse(lines[0].substring(spacing, spacing + 19))
+    val toc = GnssTime(df.parse(lines[0].substring(spacing, spacing + 19)))
     val data = ArrayList<Double>()
     for (j in 1..3) {
         val start = spacing + (j * 19)
@@ -277,14 +266,8 @@ const val STD_BRDCCLK = 30.0          /* error of broadcast clock (m) */
 
 const val MAX_ITER_KEPLER = 30        /* max number of iteration of Kelpler */
 
-fun timeadd(t: Date, s: Double): Date {
-    var tt = t.time
-    tt += (1000 * s).toLong()
-    return Date(tt)
-}
-
-fun gps2time(week: Int, sec: Double): Date {
-    return Date(GnssUtils.gps2unix(GnssUtils.constructGpsTime(week.toLong(), sec.toLong() * 1000)))
+fun gps2time(week: Int, sec: Double): GnssTime {
+    return GnssTime.fromGpsWeek(week,sec)
 }
 
 class Pos(val point3D: Point3D, val dts: Double, val variance: Double)

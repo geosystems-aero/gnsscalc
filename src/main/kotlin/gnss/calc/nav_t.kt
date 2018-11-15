@@ -44,7 +44,7 @@ class nav_t {
 
 }
 
-class eph_t(ver: Double, var sat: Int, var toc: Date, data: ArrayList<Double>) {
+class eph_t(ver: Double, var sat: Int, var toc: GnssTime, data: ArrayList<Double>) {
     private val sys = satsys(sat).sys
 
     var f0 = data[0]
@@ -89,11 +89,11 @@ class eph_t(ver: Double, var sat: Int, var toc: Date, data: ArrayList<Double>) {
     }
     var toes = data[11]
     var week = data[21].toInt()
-    var toe: Date = when (sys) {
+    var toe: GnssTime = when (sys) {
         SYS_GPS, SYS_QZS, SYS_GAL -> adjweek(gps2time(week, toes), toc)
         else -> gps2time(week, toes) //fixme bdt2gpst
     }
-    lateinit var ttr: Date
+    lateinit var ttr: GnssTime
     var sva = 0
     var svh = when (sys) {
         SYS_GPS, SYS_QZS, SYS_GAL -> data[24].toInt()
@@ -115,14 +115,13 @@ class eph_t(ver: Double, var sat: Int, var toc: Date, data: ArrayList<Double>) {
 
 }
 
-internal fun timediff(time: Date, toe: Date): Double {
-	return ((time.time - toe.time) / 1000).toDouble()
-}
+fun timediff(t1:GnssTime,t0: GnssTime):Double  = t1 - t0
+fun timeadd(t1:GnssTime, sec:Double):GnssTime = t1 + sec
 
-internal fun adjweek(t: Date, t0: Date): Date {
+internal fun adjweek(t: GnssTime, t0: GnssTime): GnssTime {
 	val tt = timediff(t, t0)
 	if (tt < -302400.0) return timeadd(t, 604800.0)
-	if (tt > 302400.0) return timeadd(t, -604800.0)
+	if (tt > 302400.0) return timeadd(t, - 604800.0)
 	return t
 }
 
@@ -133,8 +132,8 @@ class geph_t {
 	var svh: Int = 0
 	var sva: Int = 0
 	var age: Int = 0    /* satellite health, accuracy, age of operation */
-	var toe: Date = Date()        /* epoch of epherides (gpst) */
-	var tof: Date = Date()        /* message frame time (gpst) */
+	var toe: GnssTime = GnssTime(0,0.0)        /* epoch of epherides (gpst) */
+	var tof: GnssTime = GnssTime(0,0.0)        /* message frame time (gpst) */
 	val pos = DoubleArray(3)      /* satellite position (ecef) (m) */
 	val vel = DoubleArray(3)      /* satellite velocity (ecef) (m/s) */
 	val acc = DoubleArray(3)      /* satellite acceleration (ecef) (m/s^2) */

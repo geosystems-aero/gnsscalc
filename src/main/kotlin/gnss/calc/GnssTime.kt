@@ -1,5 +1,6 @@
 package gnss.calc
 
+import aero.geosystems.gnss.GnssUtils
 import java.util.*
 
 /*
@@ -47,6 +48,12 @@ class GnssTime(
 	operator fun minus(other: GnssTime):Double {
 		return (this.time - other.time).toDouble() + (this.sec - other.sec)
 	}
+	operator fun minus(sec:Double):GnssTime {
+		return GnssTime(this.time,this.sec-sec)
+	}
+	operator fun plus(sec:Double):GnssTime {
+		return GnssTime(this.time,this.sec+sec)
+	}
 
 	override operator fun compareTo(other: GnssTime) = when {
 		this.time < other.time -> -1
@@ -78,5 +85,13 @@ class GnssTime(
 		return "{time:$time, sec:$sec}"
 	}
 
-
+	companion object {
+		fun fromGpsWeek(week:Int,sec:Double):GnssTime {
+			val gpsec = week.toLong()*7*24*60*60
+			return GnssTime(
+					gpsec + GnssUtils.gpsUnixDiffAt((gpsec+sec.toLong())*1000)/1000,
+					sec
+			)
+		}
+	}
 }
