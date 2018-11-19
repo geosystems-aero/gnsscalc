@@ -14,6 +14,7 @@ buildscript {
 
 apply plugin: 'kotlin'
 apply plugin: 'application'
+mainClassName = "gnss.calc.MainKt"
 
 repositories {
     mavenCentral()
@@ -23,6 +24,10 @@ task sample1(type: JavaExec) {
     group "samples"
     main = "gnss.calc.MainKt"
     args += "sample/brdc3140.16n"
+}
+task sample2(type: JavaExec) {
+    group "samples"
+    main = "gnss.calc.Sample2Kt"
 }
 /*
 // template
