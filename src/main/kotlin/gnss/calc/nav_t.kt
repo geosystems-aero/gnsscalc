@@ -44,7 +44,7 @@ class nav_t {
 
 }
 
-class eph_t(ver: Double, var sat: Int, var toc: GnssTime, data: ArrayList<Double>) {
+class eph_t(versionMajor: Int, var sat: Int, var toc: GnssTime, data: ArrayList<Double>) {
     private val sys = satsys(sat).sys
 
     var f0 = data[0]
