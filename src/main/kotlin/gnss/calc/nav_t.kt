@@ -41,7 +41,12 @@ class nav_t {
 	//    boolean add_geph(geph_t geph){
 	//        return this.geph.add(geph);
 	//    }
-
+	fun findBestEph(sat: Int, time: GnssTime): eph_t? {
+		return eph.minBy {
+			if (it.sat != sat) Double.MAX_VALUE else
+			Math.abs(it.toc - time)
+		}?.takeIf { it.sat == sat }
+	}
 }
 
 class eph_t(versionMajor: Int, var sat: Int, var toc: GnssTime, data: ArrayList<Double>) {

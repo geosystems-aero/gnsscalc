@@ -29,18 +29,9 @@ fun main(args: Array<String>) {
     input.close()
     val satID = 32
     val time = gps2time(1922, 292229.000)
-    val sat = select_sat(nav, satID, time)
+    val sat = nav.findBestEph(satID, time) ?: error("Ephemeris not found")
     val pos = sat.positionAt(time)
     println("$satID:${sat.toc.toDate().toGMTString()}:${time.toDate().toGMTString()}: ${pos.point3D.x}, ${pos.point3D.y}, ${pos.point3D.z}")
-}
-
-fun select_sat(nav:nav_t, sat:Int, time: GnssTime): eph_t {
-    val list = nav.eph.filter { it.sat == sat }
-    if(list.isEmpty()){
-        throw Throwable("Satellite $sat not found.")
-    }
-    val sorted = list.sortedBy { Math.abs(it.toc - time) }
-    return sorted[0]
 }
 
 
