@@ -47,6 +47,16 @@ class nav_t {
 			Math.abs(it.toc - time)
 		}?.takeIf { it.sat == sat }
 	}
+	fun findBestPastEph(sat: Int, time: GnssTime): eph_t? {
+		return eph.asSequence().filter {
+			it.sat == sat
+		}.filter {
+			it.toc < time
+		}.minBy {
+			if (it.sat != sat || it.toc > time) Double.MAX_VALUE else
+			Math.abs(it.toc - time)
+		}?.takeIf { it.sat == sat }
+	}
 }
 
 class eph_t(versionMajor: Int, var sat: Int, var toc: GnssTime, data: ArrayList<Double>) {
@@ -98,7 +108,8 @@ class eph_t(versionMajor: Int, var sat: Int, var toc: GnssTime, data: ArrayList<
         SYS_GPS, SYS_QZS, SYS_GAL -> adjweek(gps2time(week, toes), toc)
         else -> gps2time(week, toes) //fixme bdt2gpst
     }
-    lateinit var ttr: GnssTime
+    var ttrs = data[27]
+	var ttr = gps2time(week,ttrs)
     var sva = 0
     var svh = when (sys) {
         SYS_GPS, SYS_QZS, SYS_GAL -> data[24].toInt()

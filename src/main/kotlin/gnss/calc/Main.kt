@@ -23,10 +23,7 @@ const val TSYS_QZS = 4
 const val TSYS_CMP = 5
 
 fun main(args: Array<String>) {
-    val input = File(args[0]).inputStream().bufferedReader()
-    val reader = RinexReader(input.lineSequence())
-    val nav = reader.readNavFile()
-    input.close()
+    val nav = RinexReader.readNavFile(File(args[0]))
     val satID = 32
     val time = gps2time(1922, 292229.000)
     val sat = nav.findBestEph(satID, time) ?: error("Ephemeris not found")

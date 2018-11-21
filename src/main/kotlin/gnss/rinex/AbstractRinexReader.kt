@@ -193,12 +193,10 @@ abstract class AbstractRinexReader(
 			spacing = 4
 		}
 		if (sys == SYS_GLO || sys == SYS_SBS) batchSize = 4
-		while (true) {
-			try {
-				val lines = (1..batchSize).mapNotNull { nextLine() }
+		while (hasNext()) {
+			val lines = (1..batchSize).mapNotNull { nextLine() }
+			if (lines.size == batchSize) {
 				readrnxnavb(lines, spacing)
-			} catch (e: Exception) {
-				return
 			}
 		}
 	}
@@ -230,7 +228,13 @@ abstract class AbstractRinexReader(
 			for (j in 0..3) {
 				val start = spacing + (j * 19)
 				val end = start + 19
-				data.add(lines[i].substring(start, end).replace('d', 'E', true).toDouble())
+				if (end > lines[i].length) {
+					data.add(0.0)
+				} else {
+					val sub = lines[i].substring(start, end).replace('d', 'E', true).trim()
+					if (sub.isEmpty()) data.add(0.0)
+					else data.add(sub.toDouble())
+				}
 			}
 		}
 		if (lines.size >= 8) {

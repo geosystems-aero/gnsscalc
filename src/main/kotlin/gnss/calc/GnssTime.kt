@@ -82,14 +82,14 @@ class GnssTime(
 	}
 
 	override fun toString(): String {
-		return "{time:$time, sec:$sec}"
+		return "GnssTime{$time${sec.toString().drop(1)}}"
 	}
 
 	companion object {
 		fun fromGpsWeek(week:Int,sec:Double):GnssTime {
 			val gpsec = week.toLong()*7*24*60*60
 			return GnssTime(
-					gpsec + GnssUtils.gpsUnixDiffAt((gpsec+sec.toLong())*1000)/1000,
+					gpsec + GnssUtils.GPS_UNIX_DIFF/1000,
 					sec
 			)
 		}
