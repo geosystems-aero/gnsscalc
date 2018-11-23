@@ -29,6 +29,10 @@ task sample2(type: JavaExec) {
     group "samples"
     main = "gnss.calc.Sample2Kt"
 }
+task sample3(type: JavaExec) {
+    group "samples"
+    main = "gnss.calc.Sample3Kt"
+}
 /*
 // template
 task sample2(type: JavaExec) {
@@ -47,4 +51,5 @@ tasks.withType(JavaExec) {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     compile project(":gnss-core")
+    compile project(":formats-rtcm3")
 }
