@@ -1,6 +1,10 @@
 package gnss.calc
 
 import aero.geosystems.gnss.GnssUtils
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.util.*
 
 /*
@@ -12,7 +16,10 @@ class GnssTime(
 		time: Long,
 		/** fraction of second under 1 s */
 		sec: Double): Comparable<GnssTime> {
-	constructor(date: Date): this(date.time/1000, (date.time % 1000)/1000.0)
+	constructor(date: Date): this(date.time/1000 - date.timezoneOffset*60, (date.time % 1000)/1000.0)
+	constructor(ldt: LocalDateTime): this(ldt.toEpochSecond(ZoneOffset.UTC),ldt.nano*1e-9)
+	constructor(ldt: ZonedDateTime): this(ldt.toEpochSecond(),ldt.nano*1e-9)
+	constructor(ldt: OffsetDateTime): this(ldt.toEpochSecond(),ldt.nano*1e-9)
 
 	/** time (s) expressed by standard time_t */
 	val time:Long
@@ -89,9 +96,11 @@ class GnssTime(
 		fun fromGpsWeek(week:Int,sec:Double):GnssTime {
 			val gpsec = week.toLong()*7*24*60*60
 			return GnssTime(
-					gpsec + GnssUtils.GPS_UNIX_DIFF/1000,
+					gpsec + GnssUtils.GPS_UNIX_DIFF_S,
 					sec
 			)
 		}
 	}
 }
+fun GnssTime.gpsWeek() = ((time-GnssUtils.GPS_UNIX_DIFF_S)/GnssUtils.SEC_IN_WEEK).toInt()
+fun GnssTime.gpsSecOfWeek() = ((time-GnssUtils.GPS_UNIX_DIFF_S)%GnssUtils.SEC_IN_WEEK) + sec

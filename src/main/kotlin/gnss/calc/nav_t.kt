@@ -1,6 +1,9 @@
 package gnss.calc
 
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.*
+import kotlin.math.pow
 
 class nav_t {
 	val eph = ArrayList<eph_t>()         /* GPS/QZS/GAL ephemeris */
@@ -59,83 +62,184 @@ class nav_t {
 	}
 }
 
-class eph_t(versionMajor: Int, var sat: Int, var toc: GnssTime, data: ArrayList<Double>) {
-    private val sys = satsys(sat).sys
+class eph_t(var toc: GnssTime, var sat: Int) {
+    val sys = satsys(sat).sys
 
-    var f0 = data[0]
-    var f1 = data[1]
-    var f2 = data[2]
+	constructor(versionMajor: Int, sat: Int, toc: GnssTime, data: ArrayList<Double>):this(toc,sat) {
+		f0 = data[0]
+		f1 = data[1]
+		f2 = data[2]
 
-    var A = Math.pow(data[10], 2.0)
-    var e = data[8]
-    var i0 = data[15]
-    var OMG0 = data[13]
-    var omg = data[17]
-    var M0 = data[6]
-    var deln = data[5]
-    var OMGd = data[18]
-    var idot = data[19]
+		A = Math.pow(data[10], 2.0)
+		e = data[8]
+		i0 = data[15]
+		OMG0 = data[13]
+		omg = data[17]
+		M0 = data[6]
+		deln = data[5]
+		OMGd = data[18]
+		idot = data[19]
 
-    var crc = data[16]
-    var crs = data[4]
-    var cuc = data[7]
-    var cus = data[9]
-    var cic = data[12]
-    var cis = data[14]
+		crc = data[16]
+		crs = data[4]
+		cuc = data[7]
+		cus = data[9]
+		cic = data[12]
+		cis = data[14]
 
-    var tgd = when (sys) {
-        SYS_GPS, SYS_QZS -> {
-            arrayOf(data[25], null, null, null)
-        }
-        SYS_GAL, SYS_CMP -> {
-            arrayOf(data[25], data[26], null, null)
-        }
-        else -> arrayOfNulls(4)
-    }
+		when (sys) {
+			SYS_GPS, SYS_QZS -> {
+				tgd[0] = data[25]
+			}
+			SYS_GAL, SYS_CMP -> {
+				tgd[0] = data[25]
+				tgd[1] = data[26]
+			}
+		}
+
+		Adot = 0.0
+		ndot = 0.0
+
+		iode = data[3].toInt()
+		iodc = when (sys) {
+			SYS_GPS, SYS_QZS -> data[26].toInt()
+			SYS_CMP -> data[28].toInt()
+			else -> 0
+		}
+		val toes = data[11]
+		week = data[21].toInt()
+		toe = when (sys) {
+			SYS_GPS, SYS_QZS, SYS_GAL -> adjweek(gps2time(week, toes), toc)
+			else -> gps2time(week, toes) //fixme bdt2gpst
+		}
+		val ttrs = data[27]
+		ttr = gps2time(week,ttrs)
+		sva = 0
+		svh = when (sys) {
+			SYS_GPS, SYS_QZS, SYS_GAL -> data[24].toInt()
+			else -> 0
+		}
+		code = when (sys) {
+			SYS_GPS, SYS_QZS, SYS_GAL -> data[20].toInt()
+			else -> 0
+		}
+		flag = when (sys) {
+			SYS_GPS, SYS_QZS -> data[22].toInt()
+			else -> 0
+		}
+
+		fit = when (sys) {
+			SYS_GPS, SYS_QZS -> data[28]
+			else -> 0.0
+		}
+	}
+
+    var f0 = 0.0
+    var f1 = 0.0
+    var f2 = 0.0
+
+    var A = 0.0
+    var e = 0.0
+    var i0 = 0.0
+    var OMG0 = 0.0
+    var omg = 0.0
+    var M0 = 0.0
+    var deln = 0.0
+    var OMGd = 0.0
+    var idot = 0.0
+
+    var crc = 0.0
+    var crs = 0.0
+    var cuc = 0.0
+    var cus = 0.0
+    var cic = 0.0
+    var cis = 0.0
+
+    var tgd:Array<Double?> = arrayOfNulls(4)
 
     var Adot = 0.0
     var ndot = 0.0
 
-    var iode = data[3].toInt()
-    var iodc = when (sys) {
-        SYS_GPS, SYS_QZS -> data[26].toInt()
-        SYS_CMP -> data[28].toInt()
-        else -> 0
-    }
-    var toes = data[11]
-    var week = data[21].toInt()
-    var toe: GnssTime = when (sys) {
-        SYS_GPS, SYS_QZS, SYS_GAL -> adjweek(gps2time(week, toes), toc)
-        else -> gps2time(week, toes) //fixme bdt2gpst
-    }
-    var ttrs = data[27]
-	var ttr = gps2time(week,ttrs)
+    var iode = 0
+    var iodc = 0
+    var week = 0
+    var toe: GnssTime = toc
+	val toes get() = toe.gpsSecOfWeek()
+    var ttr = toc
     var sva = 0
-    var svh = when (sys) {
-        SYS_GPS, SYS_QZS, SYS_GAL -> data[24].toInt()
-        else -> 0
-    }
-    var code = when (sys) {
-        SYS_GPS, SYS_QZS, SYS_GAL -> data[20].toInt()
-        else -> 0
-    }
-    var flag = when (sys) {
-        SYS_GPS, SYS_QZS -> data[22].toInt()
-        else -> 0
-    }
+    var svh = 0
+    var code = 0
+    var flag = 0
 
-    var fit = when (sys) {
-        SYS_GPS, SYS_QZS -> data[28]
-        else -> 0.0
-    }
+    var fit = 0.0
+	override fun toString(): String {
+		return "eph_t(sat=$sat, sys=$sys, toc=$toc, toe=$toe, ttr=$ttr, week=$week, iode=$iode, iodc=$iodc, f0=$f0, f1=$f1, f2=$f2, A=$A, e=$e, i0=$i0, OMG0=$OMG0, omg=$omg, M0=$M0, deln=$deln, OMGd=$OMGd, idot=$idot, crc=$crc, crs=$crs, cuc=$cuc, cus=$cus, cic=$cic, cis=$cis, tgd=${Arrays.toString(tgd)}, Adot=$Adot, ndot=$ndot, sva=$sva, svh=$svh, code=$code, flag=$flag, fit=$fit)"
+	}
 
+
+}
+
+fun eph_t.toRinexLikeStrings():String {
+	val to = StringBuffer()
+	val toc_date = LocalDateTime.ofEpochSecond(toc.time,toc.sec.times(1e9).toInt(), ZoneOffset.UTC)
+	val toe_date = LocalDateTime.ofEpochSecond(toe.time,toe.sec.times(1e9).toInt(), ZoneOffset.UTC)
+	to.appendln("%2d %2s %2s %2s %2s %2s%5.1f%19.12e%19.12e%19.12e".format(Locale.ENGLISH,
+			sat,
+			toc_date.year%100,toc_date.monthValue,toc_date.dayOfMonth,toc_date.hour,toc_date.minute,toc_date.second+toc.sec,
+			f0,
+			f1,
+			f2
+	) + "    // PRN / EPOCH / SV CLK")
+	to.appendln("   %19.12e%19.12e%19.12e%19.12e".format(Locale.ENGLISH,
+			iode.toDouble(),
+			crs,
+			deln,
+			M0
+	) + "    //  BROADCAST ORBIT - 1")
+	to.appendln("   %19.12e%19.12e%19.12e%19.12e".format(Locale.ENGLISH,
+			cuc,
+			e,
+			cus,
+			A.pow(0.5)
+	) + "    //  BROADCAST ORBIT - 2")
+	to.appendln("   %19.12e%19.12e%19.12e%19.12e".format(Locale.ENGLISH,
+			toe.gpsSecOfWeek(),
+			cic,
+			OMG0,
+			cis
+	) + "    //  BROADCAST ORBIT - 3")
+	to.appendln("   %19.12e%19.12e%19.12e%19.12e".format(Locale.ENGLISH,
+			i0,
+			crc,
+			omg,
+			OMGd
+	) + "    //  BROADCAST ORBIT - 4")
+	to.appendln("   %19.12e%19.12e%19.12e%19.12e".format(Locale.ENGLISH,
+			idot,
+			code.toDouble(),
+			week.toDouble(),
+			flag.toDouble()
+	) + "    //  BROADCAST ORBIT - 5")
+	to.appendln("   %19.12e%19.12e%19.12e%19.12e".format(Locale.ENGLISH,
+			sva.toDouble(),
+			svh.toDouble(),
+			tgd[0],
+			iodc.toDouble()
+	) + "    //  BROADCAST ORBIT - 6")
+	to.appendln("   %19.12e%19.12e%19s%19s".format(Locale.ENGLISH,
+			ttr.gpsSecOfWeek(),
+			fit,
+			"",
+			""
+	) + "    //  BROADCAST ORBIT - 7")
+	return to.toString()
 }
 
 fun timediff(t1:GnssTime,t0: GnssTime):Double  = t1 - t0
 fun timeadd(t1:GnssTime, sec:Double):GnssTime = t1 + sec
 
-internal fun adjweek(t: GnssTime, t0: GnssTime): GnssTime {
-	val tt = timediff(t, t0)
+internal fun adjweek(t: GnssTime, refTime: GnssTime): GnssTime {
+	val tt = timediff(t, refTime)
 	if (tt < -302400.0) return timeadd(t, 604800.0)
 	if (tt > 302400.0) return timeadd(t, - 604800.0)
 	return t

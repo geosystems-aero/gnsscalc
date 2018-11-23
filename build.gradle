@@ -23,7 +23,7 @@ repositories {
 task sample1(type: JavaExec) {
     group "samples"
     main = "gnss.calc.MainKt"
-    args += "sample/brdc3140.16n"
+    args += ["sample/brdc3140.16n","32","1922","292229.000"]
 }
 task sample2(type: JavaExec) {
     group "samples"

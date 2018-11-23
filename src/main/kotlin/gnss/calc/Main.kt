@@ -3,6 +3,7 @@ package gnss.calc
 import gnss.rinex.RinexReader
 import javafx.geometry.Point3D
 import java.io.File
+import java.util.*
 
 const val SYS_NONE = 0x00
 const val SYS_GPS = 0x01
@@ -23,12 +24,21 @@ const val TSYS_QZS = 4
 const val TSYS_CMP = 5
 
 fun main(args: Array<String>) {
+    if (args.size != 4) {
+        println("Arguments:\n\tRINEX_NAV_FILE SAT_ID GPS_WEEK GPS_SEC")
+        return
+    }
+    Locale.setDefault(Locale.ENGLISH)
     val nav = RinexReader.readNavFile(File(args[0]))
-    val satID = 32
-    val time = gps2time(1922, 292229.000)
+    val satID = args[1].toInt()
+    val time = gps2time(args[2].toInt(), args[3].toDouble())
+    println("For ${args.joinToString(" ")} (time = $time = ${time.toDate().toGMTString()})")
     val sat = nav.findBestEph(satID, time) ?: error("Ephemeris not found")
+    println("Using ephemerides:")
+    println(sat.toRinexLikeStrings())
     val pos = sat.positionAt(time)
-    println("$satID:${sat.toc.toDate().toGMTString()}:${time.toDate().toGMTString()}: ${pos.point3D.x}, ${pos.point3D.y}, ${pos.point3D.z}")
+    println("Result:")
+    println("%12.3f %12.3f %12.3f".format(pos.point3D.x, pos.point3D.y, pos.point3D.z))
 }
 
 
