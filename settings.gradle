@@ -1,2 +1,0 @@
-includeFlat "gnss-core","formats-rtcm3","formats-core"
-//project(":gnss-core").projectDir = file("../gnss-core")
