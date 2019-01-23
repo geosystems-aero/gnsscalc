@@ -13,9 +13,9 @@ buildscript {
 }
 
 plugins {
-    val kotlinVersion = "1.3.11"
-    kotlin("jvm") version kotlinVersion
+    kotlin("jvm")
     id("application")
+    id("idea")
 }
 application {
     mainClassName = "gnss.calc.MainKt"
@@ -49,7 +49,7 @@ task sample2(type: JavaExec) {
 
 tasks.withType<JavaExec> {
     if (group == "samples") {
-        classpath = java.sourceSets["main"].runtimeClasspath
+        classpath = sourceSets["main"].runtimeClasspath
     }
 }
 
