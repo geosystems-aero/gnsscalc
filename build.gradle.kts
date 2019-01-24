@@ -1,7 +1,7 @@
 group = "aero.geosystems"
 version = "18.1115"
 buildscript {
-    val kotlinVersion: String by extra("1.3.11")
+	val kotlinVersion: String by extra("1.3.20")
 
     repositories {
         mavenCentral()
