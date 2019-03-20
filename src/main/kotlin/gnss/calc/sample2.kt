@@ -114,14 +114,14 @@ fun main(args: Array<String>) {
 			for (o in epoch.observations) {
 				print("\t")
 				print(o.satId)
-				val eph = nav.findBestPastEph(o.satId,epoch.time)
+				val eph = nav.findBestEph(o.satId, epoch.time)
 				print("\t")
 				if (eph != null) {
 					val psr = /*o.psrL1*/o.adjP1(eph.tgd[0] ?: 0.0, true)
 					val prc = genprc(epoch.time, psr, rcvxyz, eph)
-					print("%7.3f".format(prc))
+					print("%7.3f\t%d".format(prc, eph.iodc))
 				} else {
-					print("-------")
+					print("-------\t--")
 				}
 			}
 			println()
@@ -135,18 +135,15 @@ fun main(args: Array<String>) {
 			val mzc = parts[2].toInt()*0.6
 			val dtz = mzc-mzc.roundToInt()
 			val corrparts = parts.drop(7).chunked(6)
-			val corrs = corrparts.map { corr ->
+			for (corr in corrparts) {
 				val scale = if (corr[0].toInt() == 0) 0.02 else 0.32
 				val udre = corr[1].toInt()
 				val sat = corr[2].toInt()
 				val pc0 = corr[3].toInt() * scale
 				val rrc = corr[4].toInt() * 0.1 * scale
-				val iodc = corr[5]
+				val iodc = corr[5].toInt()
 				val pc = pc0 + rrc*dtz
-				sat to pc
-			}//.sortedBy { it.first }
-			for ((sat,pc) in corrs) {
-				print("\t%d\t%7.3f".format(sat, pc))
+				print("\t%d\t%7.3f\t%d".format(sat, pc, iodc))
 			}
 			println()
 		}
