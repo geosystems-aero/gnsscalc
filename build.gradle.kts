@@ -57,4 +57,7 @@ dependencies {
     compile(kotlin("stdlib-jdk8"))
     compile(project(":gnss-core"))
     compile(project(":formats-rtcm3"))
+
+    testCompile(kotlin("test"))
+    testCompile(kotlin("test-junit"))
 }

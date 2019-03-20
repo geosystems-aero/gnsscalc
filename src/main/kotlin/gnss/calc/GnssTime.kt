@@ -16,7 +16,7 @@ class GnssTime(
 		time: Long,
 		/** fraction of second under 1 s */
 		sec: Double): Comparable<GnssTime> {
-	constructor(date: Date): this(date.time/1000 - date.timezoneOffset*60, (date.time % 1000)/1000.0)
+	constructor(date: Date) : this(date.time / 1000, (date.time % 1000) / 1000.0)
 	constructor(ldt: LocalDateTime): this(ldt.toEpochSecond(ZoneOffset.UTC),ldt.nano*1e-9)
 	constructor(ldt: ZonedDateTime): this(ldt.toEpochSecond(),ldt.nano*1e-9)
 	constructor(ldt: OffsetDateTime): this(ldt.toEpochSecond(),ldt.nano*1e-9)
@@ -89,7 +89,7 @@ class GnssTime(
 	}
 
 	override fun toString(): String {
-		return "GnssTime{$time${sec.toString().drop(1)}}"
+		return "GnssTime{${gpsWeek()} ${gpsIntSecOfWeek()}${sec.toString().drop(1)}}"
 	}
 
 	companion object {
@@ -103,4 +103,5 @@ class GnssTime(
 	}
 }
 fun GnssTime.gpsWeek() = ((time-GnssUtils.GPS_UNIX_DIFF_S)/GnssUtils.SEC_IN_WEEK).toInt()
+fun GnssTime.gpsIntSecOfWeek() = ((time - GnssUtils.GPS_UNIX_DIFF_S) % GnssUtils.SEC_IN_WEEK).toInt()
 fun GnssTime.gpsSecOfWeek() = ((time-GnssUtils.GPS_UNIX_DIFF_S)%GnssUtils.SEC_IN_WEEK) + sec

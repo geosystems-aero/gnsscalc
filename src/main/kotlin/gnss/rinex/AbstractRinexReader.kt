@@ -187,62 +187,64 @@ abstract class AbstractRinexReader(
 	}
 
 	private fun readrnxnav() {
-		var spacing = 3
 		var batchSize = 8
-		if (version.toInt() >= 3) {
-			spacing = 4
-		}
 		if (sys == SYS_GLO || sys == SYS_SBS) batchSize = 4
 		while (hasNext()) {
 			val lines = (1..batchSize).mapNotNull { nextLine() }
 			if (lines.size == batchSize) {
-				readrnxnavb(lines, spacing)
+				readrnxnavb(lines)
 			}
 		}
 	}
 
-	private fun readrnxnavb(lines: List<String>, spacing: Int) {
-		var sat = 0
-		if (version.toInt() >= 3 || sys == SYS_GAL || sys == SYS_QZS) {
-			//todo
-			// sat = satIDtoNo(lines[0].substring(0,3))
-		} else {
-			val prn = lines[0].substring(0, 2).trim().toInt()
-			sat = when {
-				sys == SYS_SBS -> satno(SYS_SBS, prn + 100)
-				sys == SYS_GLO -> satno(SYS_GLO, prn)
-				prn in 93..97 -> satno(SYS_QZS, prn + 100)
-				else -> satno(SYS_GPS, prn)
-			}
-		}
-		val df = SimpleDateFormat("yy MM dd HH mm ssss")
-		df.timeZone = TimeZone.getTimeZone("GMT")
-		val toc = GnssTime(df.parse(lines[0].substring(spacing, spacing + 19)))
-		val data = ArrayList<Double>()
-		for (j in 1..3) {
-			val start = spacing + (j * 19)
-			val end = start + 19
-			data.add(lines[0].substring(start, end).replace('d', 'E', true).toDouble())
-		}
-		for (i in 1 until lines.size) {
-			for (j in 0..3) {
-				val start = spacing + (j * 19)
-				val end = start + 19
-				if (end > lines[i].length) {
-					data.add(0.0)
-				} else {
-					val sub = lines[i].substring(start, end).replace('d', 'E', true).trim()
-					if (sub.isEmpty()) data.add(0.0)
-					else data.add(sub.toDouble())
-				}
-			}
-		}
-		if (lines.size >= 8) {
-			nav.add_eph(eph_t(version.toInt(), sat, toc, data))
-		}
+	private fun readrnxnavb(lines: List<String>) {
+		nav.add_eph(Companion.readrnxnavb(version, sys, lines))
 	}
 
 	companion object {
 		const val DEFAULT_MAXPOSHEAD = 1024
+
+		fun readrnxnavb(version: BigDecimal, sys: Int, lines: List<String>): eph_t {
+			if (lines.size != 8) error("Expected 8 rnxnav lines, got ${lines.size}")
+
+			val spacing = if (version.toInt() >= 3) 4 else 3
+
+			val sat: Int
+			if (version.toInt() >= 3 || sys == SYS_GAL || sys == SYS_QZS) {
+				TODO()
+				// sat = satIDtoNo(lines[0].substring(0,3))
+			} else {
+				val prn = lines[0].substring(0, 2).trim().toInt()
+				sat = when {
+					sys == SYS_SBS -> satno(SYS_SBS, prn + 100)
+					sys == SYS_GLO -> satno(SYS_GLO, prn)
+					prn in 93..97 -> satno(SYS_QZS, prn + 100)
+					else -> satno(SYS_GPS, prn)
+				}
+			}
+			val df = SimpleDateFormat("yy MM dd HH mm ssss")
+			df.timeZone = TimeZone.getTimeZone("GMT")
+			val toc = GnssTime(df.parse(lines[0].substring(spacing, spacing + 19)))
+			val data = ArrayList<Double>()
+			for (j in 1..3) {
+				val start = spacing + (j * 19)
+				val end = start + 19
+				data.add(lines[0].substring(start, end).replace('d', 'E', true).toDouble())
+			}
+			for (i in 1 until lines.size) {
+				for (j in 0..3) {
+					val start = spacing + (j * 19)
+					val end = start + 19
+					if (end > lines[i].length) {
+						data.add(0.0)
+					} else {
+						val sub = lines[i].substring(start, end).replace('d', 'E', true).trim()
+						if (sub.isEmpty()) data.add(0.0)
+						else data.add(sub.toDouble())
+					}
+				}
+			}
+			return eph_t(version.toInt(), sat, toc, data)
+		}
 	}
 }

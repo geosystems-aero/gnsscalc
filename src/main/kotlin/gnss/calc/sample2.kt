@@ -108,8 +108,8 @@ fun main(args: Array<String>) {
 	)
 	File("sample/novdgps040.txt").forEachLine { line ->
 		if (line.startsWith("#RANGECMP")) {
-			print("A\t")
 			val epoch = parseRangecmp(line)
+			print("A\t")
 			print(epoch.time.toDate().toGMTString())
 			for (o in epoch.observations) {
 				print("\t")
@@ -117,11 +117,11 @@ fun main(args: Array<String>) {
 				val eph = nav.findBestPastEph(o.satId,epoch.time)
 				print("\t")
 				if (eph != null) {
-					val psr = o.psrL1//o.adjP1(eph.tgd[0]?:0.0, true)
+					val psr = /*o.psrL1*/o.adjP1(eph.tgd[0] ?: 0.0, true)
 					val prc = genprc(epoch.time, psr, rcvxyz, eph)
-					print("%.3f".format(prc,prc))
+					print("%7.3f".format(prc))
 				} else {
-					print("N/A")
+					print("-------")
 				}
 			}
 			println()
@@ -146,7 +146,7 @@ fun main(args: Array<String>) {
 				sat to pc
 			}//.sortedBy { it.first }
 			for ((sat,pc) in corrs) {
-				print("\t%d\t%.3f".format(sat, pc))
+				print("\t%d\t%7.3f".format(sat, pc))
 			}
 			println()
 		}
