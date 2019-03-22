@@ -1,7 +1,6 @@
 package gnss.calc
 
 import gnss.rinex.RinexReader
-import javafx.geometry.Point3D
 import java.io.File
 import java.util.*
 

@@ -1,7 +1,5 @@
 package gnss.calc
 
-import javafx.geometry.Point3D
-
 /*
  * Created by aimozg on 14.11.2018.
  * Confidential unless published on GitHub

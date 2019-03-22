@@ -100,8 +100,15 @@ class GnssTime(
 					sec
 			)
 		}
+
+		fun fromGpsEpochMs(gpstime: Long): GnssTime {
+			val week = GnssUtils.extractGpsWeek(gpstime).toInt()
+			val ms = GnssUtils.extractMs(gpstime)
+			return fromGpsWeek(week, ms / 1000.0)
+		}
 	}
 }
 fun GnssTime.gpsWeek() = ((time-GnssUtils.GPS_UNIX_DIFF_S)/GnssUtils.SEC_IN_WEEK).toInt()
 fun GnssTime.gpsIntSecOfWeek() = ((time - GnssUtils.GPS_UNIX_DIFF_S) % GnssUtils.SEC_IN_WEEK).toInt()
 fun GnssTime.gpsSecOfWeek() = ((time-GnssUtils.GPS_UNIX_DIFF_S)%GnssUtils.SEC_IN_WEEK) + sec
+fun GnssTime.gpsEpochMs() = (time * 1000 + sec.times(1000).toLong() - GnssUtils.GPS_UNIX_DIFF)
